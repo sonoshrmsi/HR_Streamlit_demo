@@ -4,9 +4,8 @@ import streamlit as st
 from sqlalchemy import create_engine, inspect
 import pandas as pd 
 import base64
-<<<<<<< Updated upstream
 import os
-=======
+
 from PyPDF2 import PdfReader
 
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -14,7 +13,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain. vectorstores import ElasticVectorSearch, Pinecone, Weaviate, FAISS
 from langchain.chains.question_answering import load_qa_chain
 from langchain.llms import OpenAI
->>>>>>> Stashed changes
+
 
 
 # Connect to the database
