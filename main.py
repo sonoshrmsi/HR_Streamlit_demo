@@ -4,10 +4,11 @@ import streamlit as st
 from sqlalchemy import create_engine, inspect
 import pandas as pd 
 import base64
+import os
 
 
 # Connect to the database
-db_uri = "sqlite:////Users/shahryar/Desktop/SQLite3/hr_demo.db"
+db_uri = f"sqlite:///{os.getcwd()}/hr_demo.db"
 engine = create_engine(db_uri)
 inspector = inspect(engine)
 table_names = inspector.get_table_names()
