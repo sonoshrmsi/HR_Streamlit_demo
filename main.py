@@ -7,7 +7,7 @@ import base64
 
 
 # Connect to the database
-db_uri = "sqlite:////Users/shahryar/Desktop/hr_demo.db"
+db_uri = "sqlite:////Users/shahryar/Desktop/SQLite3/hr_demo.db"
 engine = create_engine(db_uri)
 inspector = inspect(engine)
 table_names = inspector.get_table_names()
@@ -75,9 +75,8 @@ with st.container():
     with col2:
         st.write("## Ask a question about the data")
         user_question = st.text_input("Type your question here...")
-
+        
         # Translation and execution button
-
         if st.button("Submit"):
             if user_question:
                 result = db_chain(user_question)
@@ -87,6 +86,7 @@ with st.container():
                 # showing the result if there is a table
                 result_list = eval(result["intermediate_steps"][3])
                 if len(result_list[0]) > 1:
+
                     column_names = inspector.get_columns(selected_table)
                     column_names = [col["name"] for col in column_names]
                     df = pd.DataFrame(result_list, columns=column_names)
@@ -99,6 +99,3 @@ with st.container():
                     st.markdown(href, unsafe_allow_html=True)
                     st.write("## Result")
                     st.dataframe(df)
-
-
-
