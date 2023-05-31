@@ -88,8 +88,8 @@ with st.container():
 
     with col2:
         st.write("## Ask a question about the data")
-        user_question = st.text_input("Type your question here...")
-        
+        _user_question = st.text_input("Type your question here...")
+        user_question = f"{_user_question}. Make sure to return all the columns"
         # Translation and execution button
         if st.button("Submit"):
             if user_question:
