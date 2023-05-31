@@ -2,3 +2,6 @@ langchain
 streamlit
 sqlalchemy
 pandas
+faiss-cpu  
+tiktoken
+openai
