@@ -51,99 +51,71 @@ with st.container():
     st.markdown('This app translates natural language questions into SQL queries and executes them on a database. Simply type in a question and see the SQL query and its result.')
 
 with st.container():
-    col1, col2 = st.columns(2)
-    with col2:
-        st.write("## Select a table to query")
-        selected_table = st.selectbox("Choose a table", options=table_names)
-        if selected_table:
-            query = f"SELECT * FROM {selected_table} LIMIT 1"
-            df = pd.read_sql_query(query, engine)
-            # Display first row
-            st.write("Below, you can see what columns are available to use:")
-            st.dataframe(df)
-    with col1:
-
-
-        # Streamlit interface
-        st.header('Instructions for using the SQL Query App')
-
-        st.header('Table Selection')
-        st.write('1. Choose a table from the dropdown menu. This will determine the table to be queried.')
-
-        st.header('Ask a Question')
-        st.write('2. Type your question about the data in the text input field. The question should be in a natural language format, such as "How many employees are there?" or "What is the average salary?".')
-
-        st.header('Run Query')
-        st.write('3. Click the "Run Query" button to execute the query based on your question.')
-
-        st.header('View Results')
-        st.write('4. If the query generates table-like results, the app will display the results as a table. You can scroll through the table to view all the rows and columns.')
-
-        st.header('Download Results')
-        st.write('5. If the query generates table-like results, a "Download CSV File" button will appear below the table. Clicking this button will download the query results as a CSV file named "query_results.csv".')
-
-        st.header('Ask Another Question')
-        st.write('6. You can repeat the process by selecting a different table, entering a new question, and clicking the "Run Query" button again.')
-
-
-    with col2:
-        st.write("## Ask a question about the data")
-        _user_question = st.text_input("Type your question here...")
-        user_question = f"{_user_question}. Make sure to return all the columns"
-        # Translation and execution button
-        if st.button("Submit"):
-            if user_question:
-                result = db_chain(user_question)
-                st.write("## Result")      
-                st.write(result["intermediate_steps"][5])
-                
-                # showing the result if there is a table
-                result_list = eval(result["intermediate_steps"][3])
-                if len(result_list[0]) > 1:
-
-                    column_names = inspector.get_columns(selected_table)
-                    column_names = [col["name"] for col in column_names]
-                    df = pd.DataFrame(result_list, columns=column_names)
-                    # st.write("## Result")
-                    # st.dataframe(df)
-                    # Download button
-                    csv = df.to_csv(index=False)
-                    b64 = base64.b64encode(csv.encode()).decode()
-                    href = f'<a href="data:file/csv;base64,{b64}" download="query_results.csv">Download CSV File</a>'
-                    st.markdown(href, unsafe_allow_html=True)
-                    st.write("## Result")
-                    st.dataframe(df)
-                # Create a PdfReader object to read the PDF file
-                pdf_path = "./HR_Salary_Classes.pdf"
-                pdf_reader = PdfReader(pdf_path)
-                # if the pdf is uploaded
-                if pdf_reader:
-                    reader = pdf_reader
-                    # reader = PdfReader(pdf)
-                    raw_text = ''
-                    # Looping through the pdf
-                    for i, page in enumerate(reader.pages):
-                        text = page.extract_text()
-                        if text:
-                            raw_text += text
-
-                    # Splitting the text into chunks
-                    text_splitter = CharacterTextSplitter(
-                        separator='\n',
-                        chunk_size=1000,
-                        chunk_overlap=200,
-                        length_function=len
-                    )
-                    text = text_splitter.split_text(raw_text)
-                    # Embedding the texts
-                    embeddings = OpenAIEmbeddings()
-                    docsearch = FAISS.from_texts(text, embeddings)
-
-                    # LLM creativity
-                    llm = OpenAI(temperature=0.5)
+    st.write("## Select a table to query")
+    selected_table = st.selectbox("Choose a table", options=table_names)
+    if selected_table:
+        query = f"SELECT * FROM {selected_table} LIMIT 1"
+        df = pd.read_sql_query(query, engine)
+        # Display first row
+        st.write("Below, you can see what columns are available to use:")
+        st.dataframe(df)
+    st.write("## Ask a question about the data")
+    _user_question = st.text_input("Type your question here...")
+    user_question = f"{_user_question}. Make sure to return all the columns"
+    # Translation and execution button
+    if st.button("Submit"):
+        if user_question:
+            result = db_chain(user_question)
+            st.write("## Result")      
+            st.write(result["intermediate_steps"][5])
             
-                    # prompt = prompt + " And at least provide 200 words"
-                    prompt = f"Salary indication based on this prompt {result['intermediate_steps'][5]} and explain it from this pdf: {text} and explain it in 200 words"
-                    search = docsearch.similarity_search(prompt)
-                    answer = chain.run(input_documents=search, question=prompt)
-                    st.write(answer)
+            # showing the result if there is a table
+            result_list = eval(result["intermediate_steps"][3])
+            if len(result_list[0]) > 1:
+
+                column_names = inspector.get_columns(selected_table)
+                column_names = [col["name"] for col in column_names]
+                df = pd.DataFrame(result_list, columns=column_names)
+                # st.write("## Result")
+                # st.dataframe(df)
+                # Download button
+                csv = df.to_csv(index=False)
+                b64 = base64.b64encode(csv.encode()).decode()
+                href = f'<a href="data:file/csv;base64,{b64}" download="query_results.csv">Download CSV File</a>'
+                st.markdown(href, unsafe_allow_html=True)
+                st.write("## Result")
+                st.dataframe(df)
+            # Create a PdfReader object to read the PDF file
+            pdf_path = "./HR_Salary_Classes.pdf"
+            pdf_reader = PdfReader(pdf_path)
+            # if the pdf is uploaded
+            if pdf_reader:
+                reader = pdf_reader
+                # reader = PdfReader(pdf)
+                raw_text = ''
+                # Looping through the pdf
+                for i, page in enumerate(reader.pages):
+                    text = page.extract_text()
+                    if text:
+                        raw_text += text
+
+                # Splitting the text into chunks
+                text_splitter = CharacterTextSplitter(
+                    separator='\n',
+                    chunk_size=1000,
+                    chunk_overlap=200,
+                    length_function=len
+                )
+                text = text_splitter.split_text(raw_text)
+                # Embedding the texts
+                embeddings = OpenAIEmbeddings()
+                docsearch = FAISS.from_texts(text, embeddings)
+
+                # LLM creativity
+                llm = OpenAI(temperature=0.5)
+        
+                # prompt = prompt + " And at least provide 200 words"
+                prompt = f"Salary indication based on this prompt {result['intermediate_steps'][5]} and explain it from this pdf: {text} and explain it in 200 words"
+                search = docsearch.similarity_search(prompt)
+                answer = chain.run(input_documents=search, question=prompt)
+                st.write(answer)
