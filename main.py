@@ -1,5 +1,6 @@
 # Import necessary libraries
 from langchain import OpenAI, SQLDatabase, SQLDatabaseChain
+from langchain import PromptTemplate, LLMChain
 import streamlit as st
 from sqlalchemy import create_engine, inspect
 import pandas as pd 
@@ -85,37 +86,22 @@ with st.container():
                 st.markdown(href, unsafe_allow_html=True)
                 st.write("## Result")
                 st.dataframe(df)
-            # Create a PdfReader object to read the PDF file
-            pdf_path = "./HR_Salary_Classes.pdf"
-            pdf_reader = PdfReader(pdf_path)
-            # if the pdf is uploaded
-            if pdf_reader:
-                reader = pdf_reader
-                # reader = PdfReader(pdf)
-                raw_text = ''
-                # Looping through the pdf
-                for i, page in enumerate(reader.pages):
-                    text = page.extract_text()
-                    if text:
-                        raw_text += text
 
-                # Splitting the text into chunks
-                text_splitter = CharacterTextSplitter(
-                    separator='\n',
-                    chunk_size=1000,
-                    chunk_overlap=200,
-                    length_function=len
-                )
-                text = text_splitter.split_text(raw_text)
-                # Embedding the texts
+
                 embeddings = OpenAIEmbeddings()
-                docsearch = FAISS.from_texts(text, embeddings)
+                docsearch = FAISS.load_local('docsearch_index/', embeddings)
 
                 # LLM creativity
                 llm = OpenAI(temperature=0.5)
+                prompt_template = "Based on the following piece of text: {search_result}\n\n provide some background information to the following question: \n {question}\n\n If you feel the text is not relevant to the question, don't mention it, ignore the text, and give some background information as you see fit."
+                prompt = PromptTemplate(template=prompt_template, input_variables=["search_result", "question"])
+
+                llm_chain = LLMChain(prompt=prompt, llm=llm)
         
-                # prompt = prompt + " And at least provide 200 words"
-                prompt = f"Salary indication based on this prompt {result['intermediate_steps'][5]} and explain it from this pdf: {text} and explain it in 200 words"
-                search = docsearch.similarity_search(prompt)
-                answer = chain.run(input_documents=search, question=prompt)
+                search_result = docsearch.similarity_search(user_question)
+
+                print(search_result)
+                answer = llm_chain.run({'search_result': search_result,
+                                        "question": user_question})
+                
                 st.write(answer)
