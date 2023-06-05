@@ -8,7 +8,7 @@ from langchain.vectorstores import FAISS
 # Create a PdfReader object to read the PDF file
 pdf_path = "./hrmanagement.pdf"
 pdf_reader = PdfReader(pdf_path)
-# if the pdf is uploaded
+# If the pdf is uploaded
 if pdf_reader:
     reader = pdf_reader
     _raw_text = []
@@ -30,6 +30,6 @@ if pdf_reader:
 
     text = text_splitter.split_text(raw_text)
     embeddings = OpenAIEmbeddings()
-    docsearch = FAISS.from_texts(text, embeddings)
 
-    FAISS.save_local('./document_index', docsearch)
+    docsearch = FAISS.from_texts(text, embeddings)
+    docsearch.save_local('./document_index')

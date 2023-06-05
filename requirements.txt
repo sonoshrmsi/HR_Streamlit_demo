@@ -5,3 +5,4 @@ pandas
 faiss-cpu  
 tiktoken
 openai
+PyPDF2
